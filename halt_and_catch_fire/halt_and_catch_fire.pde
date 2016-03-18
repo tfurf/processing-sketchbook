@@ -22,15 +22,15 @@ class Canvas {
 
 abstract class Brush {
   Brush() {}
-  abstract void draw( PVector p , color c );
+  abstract void draw( PVector p , int diam , color c );
 }
 
 class EllipseBrush extends Brush {
   EllipseBrush () {}
-  void draw( PVector p , color c ) {
+  void draw( PVector p , int diam , color c ) {
     noStroke();
     fill(c);
-    ellipse( p.x , p.y , 10 , 10 );  
+    ellipse( p.x , p.y , diam , diam );  
   }
 }
 
@@ -41,19 +41,26 @@ class Streaker {
   float speed;
   int e_h = 5;
   int e_w = 5;
-  PVector[] track;
-  Streaker ( Canvas canvas , color base_color , PVector dir , PVector start  , float s ) {
+  int diameter;
+  ArrayList<PVector> track;
+  Streaker ( Canvas canvas , color base_color , PVector dir , PVector start_  , int diam_ , float s ) {
     base_color = base_color ;  // Base color
     direction = dir;           // Direction
-    start = start ;              // Base row or column.
+    start = start_ ;              // Base row or column.
     speed = s;
+    diameter = diam_ ;
+    track = new ArrayList<PVector>();
   }
   void iterate ( int ctr , Brush br ) {
-    track = append( track, start.add( direction.mult( speed*ctr ) ) );
-    for ( PVector p : track ) {
-      println( p );
-      br.draw(p , base_color );
+    PVector step = PVector.mult( direction , speed*ctr ) ;
+    PVector next = PVector.add( start , step );
+    track.add( next );
+    if ( track.size() > 2 ) {
+      for ( PVector p : track.subList(0, track.size() - 2 ) ) {
+        br.draw(p , diameter, base_color );
+      }
     }
+    br.draw( next , 3*diameter , base_color );
   }
 }
 
@@ -75,14 +82,17 @@ int a = 640;
 int b = height;
 int c = 640;
 Brush brush ;
+ArrayList<Streaker> streakers ;
 
 void setup() {
-   canvas = new Canvas ( width , height , 0 , 60 );
+   canvas = new Canvas ( width , height , 255 , 60 );
    canvas.setup();
-   str = new Streaker( canvas , color( 50 , 50 , 50 , 0 ) , new PVector( 1 , 0 ) , new PVector( height/2 , 0 ) , 10/canvas.frame_rate );
+   str = new Streaker( canvas , color( 100 , 0 , 0 , 0 ) , new PVector( 1 , 0 ) , new PVector( 0 , height/2  ) , 10 , 200.0/canvas.frame_rate );
    brush = new EllipseBrush();
+   streakers = new ArrayList<Streaker>();
 }
 void draw() {
+  canvas.reset();
   str.iterate( ++i , brush );
 }
 
