@@ -49,7 +49,7 @@ class Streaker {
     speed = s;
   }
   void iterate ( int ctr , Brush br ) {
-    track = append( track, new PVector(track[track.length-1]).mult( s*ctr ) );
+    track = append( track, start.add( direction.mult( speed*ctr ) ) );
     for ( PVector p : track ) {
       println( p );
       br.draw(p , base_color );
